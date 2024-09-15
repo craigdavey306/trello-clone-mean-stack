@@ -9,6 +9,7 @@
       (handleSubmit)="updateBoardName($event)"
     >
     </inline-form>
+    <button class="delete-board" (click)="deleteBoard()">Delete</button>
   </div>
   <div class="columns">
     <div class="column" *ngFor="let column of data.columns">

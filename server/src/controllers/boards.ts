@@ -145,3 +145,32 @@ export const updateBoard = async (
     socket.emit(SocketEventsEnum.BoardsUpdateFailure, getErrorMessage(err));
   }
 };
+
+/**
+ * Logic to delete a board and notify all subscribers about the edit.
+ * @param io
+ * @param socket
+ * @param data
+ */
+export const deleteBoard = async (
+  io: Server,
+  socket: Socket,
+  data: { boardId: string }
+): Promise<void> => {
+  try {
+    if (!socket.user) {
+      socket.emit(
+        SocketEventsEnum.BoardsDeleteFailure,
+        'User is not authorized'
+      );
+      return;
+    }
+
+    await BoardModel.deleteOne({ _id: data.boardId });
+
+    socket.emit(SocketEventsEnum.BoardsDeleteSuccess);
+    io.to(data.boardId).emit(SocketEventsEnum.BoardsDeleteSuccess);
+  } catch (err) {
+    socket.emit(SocketEventsEnum.BoardsDeleteFailure, getErrorMessage(err));
+  }
+};

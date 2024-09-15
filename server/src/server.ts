@@ -99,6 +99,11 @@ io.use(async (socket: Socket, next) => {
   socket.on(SocketEventsEnum.BoardsUpdate, (data) => {
     boardsController.updateBoard(io, socket, data);
   });
+
+  // listen for board delete event
+  socket.on(SocketEventsEnum.BoardsDelete, (data) => {
+    boardsController.deleteBoard(io, socket, data);
+  });
 });
 
 mongoose.connect(`${databaseUri}/${databaseName}`).then(() => {
