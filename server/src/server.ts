@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import jwt from 'jsonwebtoken';
 import 'dotenv/config';
 import { createServer } from 'node:http';
 import { Server } from 'socket.io';
@@ -7,7 +8,13 @@ import mongoose from 'mongoose';
 import bodyParser from 'body-parser';
 import * as usersController from './controllers/users';
 import * as boardsController from './controllers/boards';
+import * as columnsController from './controllers/columns';
+import * as tasksController from './controllers/tasks';
 import authMiddleware from './middleware/auth';
+import { SocketEventsEnum } from './types/socketEvents.enum';
+import { secret } from './config';
+import User from './models/User';
+import { Socket } from './types/socket.interface';
 
 const app = express();
 const httpServer = createServer(app);
@@ -19,8 +26,6 @@ const io = new Server(httpServer, {
 const port = process.env.PORT ?? 4001;
 const databaseUri = process.env.DATABASE_CONNECTION_URI;
 const databaseName = process.env.DATABASE;
-
-console.log(databaseUri, databaseName);
 
 app.use(cors());
 app.use(bodyParser.json());
@@ -43,10 +48,45 @@ app.post('/api/users/login', usersController.login);
 app.get('/api/user', authMiddleware, usersController.currentUser);
 app.get('/api/boards', authMiddleware, boardsController.getBoards);
 app.get('/api/board/:boardId', authMiddleware, boardsController.getBoard);
+app.get(
+  '/api/board/:boardId/columns',
+  authMiddleware,
+  columnsController.getColumns
+);
+app.get('/api/board/:boardId/tasks', authMiddleware, tasksController.getTasks);
 app.post('/api/boards', authMiddleware, boardsController.createBoard);
 
-io.on('connection', () => {
-  console.log('Connected');
+io.use(async (socket: Socket, next) => {
+  try {
+    const token = socket.handshake.auth.token as string;
+    const data = jwt.verify(token.split(' ')[1], secret) as {
+      id: string;
+      email: string;
+    };
+    const user = await User.findById(data.id);
+
+    if (!user) {
+      return next(new Error('Authentication error'));
+    }
+
+    socket.user = user;
+    next();
+  } catch (err) {
+    next(new Error('Authentication error'));
+  }
+}).on('connection', (socket) => {
+  socket.on(SocketEventsEnum.BoardsJoin, (data) => {
+    boardsController.joinBoard(io, socket, data);
+  });
+  socket.on(SocketEventsEnum.BoardsLeave, (data) => {
+    boardsController.leaveBoard(io, socket, data);
+  });
+  socket.on(SocketEventsEnum.ColumnCreate, (data) => {
+    columnsController.createColumn(io, socket, data);
+  });
+  socket.on(SocketEventsEnum.TaskCreate, (data) => {
+    tasksController.createTask(io, socket, data);
+  });
 });
 
 mongoose.connect(`${databaseUri}/${databaseName}`).then(() => {

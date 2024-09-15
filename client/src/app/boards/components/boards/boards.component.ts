@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { BoardsService } from '../../../shared/services/boards.service';
 import { BoardInterface } from '../../../shared/types/board.interface';
 

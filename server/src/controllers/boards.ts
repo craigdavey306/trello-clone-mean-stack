@@ -1,7 +1,15 @@
 import { Response, NextFunction } from 'express';
+import { Server } from 'socket.io';
 import BoardModel from '../models/Board';
-import { ExpressRequest } from '../types';
+import { ExpressRequest, Socket } from '../types';
 
+/**
+ * Schedules a command to retrieve all boards for the user.
+ * @param req Request
+ * @param res Response
+ * @param next Next function
+ * @returns A promise that will resolve to an array of documents associated with the user.
+ */
 export const getBoards = async (
   req: ExpressRequest,
   res: Response,
@@ -19,6 +27,13 @@ export const getBoards = async (
   }
 };
 
+/**
+ * Schedules a command to retrieve a single board.
+ * @param req Request
+ * @param res Response
+ * @param next Next function
+ * @returns A promise that will resolve to a document for the requested board.
+ */
 export const getBoard = async (
   req: ExpressRequest,
   res: Response,
@@ -36,6 +51,13 @@ export const getBoard = async (
   }
 };
 
+/**
+ * Schedules a command to create a new board.
+ * @param req Request
+ * @param res Response
+ * @param next Next function
+ * @returns A promise that resolve to the newly created board.
+ */
 export const createBoard = async (
   req: ExpressRequest,
   res: Response,
@@ -56,4 +78,33 @@ export const createBoard = async (
   } catch (err) {
     next(err);
   }
+};
+
+/**
+ * Joins a socket channel/room for a specific board.
+ * @param io
+ * @param socket
+ * @param data
+ */
+export const joinBoard = (
+  io: Server,
+  socket: Socket,
+  data: { boardId: string }
+): void => {
+  socket.join(data.boardId);
+};
+
+/**
+ * Logic to leave a channel/room. A room might be left when the user navigates away
+ * from the current board on the client.
+ * @param io
+ * @param socket
+ * @param data
+ */
+export const leaveBoard = (
+  io: Server,
+  socket: Socket,
+  data: { boardId: string }
+): void => {
+  socket.leave(data.boardId);
 };

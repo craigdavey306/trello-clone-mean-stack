@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, filter, map, Observable, tap } from 'rxjs';
+import { BehaviorSubject, filter, map, Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { CurrentUser, RegisterRequest, LoginRequest } from '../types';
 import { SocketService } from '../../shared/services/socket.service';
@@ -44,5 +44,9 @@ export class AuthService {
 
   setToken(currentUser: CurrentUser): void {
     localStorage.setItem('token', currentUser.token);
+  }
+
+  setupSocketConnection(currentUser: CurrentUser) {
+    this.socketService.setupSocketConnection(currentUser);
   }
 }

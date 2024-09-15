@@ -10,7 +10,7 @@ import { map } from 'rxjs';
  * @returns Returns true if the user is logged in, or returns a url tree for redirecting
  * the user if not currently signed in.
  */
-export const authGuardCanActivate: CanActivateFn = (route, state) => {
+export const authGuardCanActivate: CanActivateFn = (_route, _state) => {
   const authService = inject(AuthService);
   return authService.isLoggedIn$.pipe(
     map((isLoggedIn) => {

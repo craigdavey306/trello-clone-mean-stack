@@ -27,7 +27,9 @@ export class AppComponent implements OnInit {
       next: (currentUser) => {
         this.socketService.setupSocketConnection(currentUser);
         this.authService.setCurrentUser(currentUser);
+        this.authService.setupSocketConnection(currentUser);
       },
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       error: (err) => {
         this.authService.setCurrentUser(null);
       },
