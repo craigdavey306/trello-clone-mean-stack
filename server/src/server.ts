@@ -75,17 +75,29 @@ io.use(async (socket: Socket, next) => {
     next(new Error('Authentication error'));
   }
 }).on('connection', (socket) => {
+  // listen for join board event
   socket.on(SocketEventsEnum.BoardsJoin, (data) => {
     boardsController.joinBoard(io, socket, data);
   });
+
+  // listen for leave board event
   socket.on(SocketEventsEnum.BoardsLeave, (data) => {
     boardsController.leaveBoard(io, socket, data);
   });
+
+  // listen for create column event
   socket.on(SocketEventsEnum.ColumnCreate, (data) => {
     columnsController.createColumn(io, socket, data);
   });
+
+  // listen for task create event
   socket.on(SocketEventsEnum.TaskCreate, (data) => {
     tasksController.createTask(io, socket, data);
+  });
+
+  // listen for board update event
+  socket.on(SocketEventsEnum.BoardsUpdate, (data) => {
+    boardsController.updateBoard(io, socket, data);
   });
 });
 

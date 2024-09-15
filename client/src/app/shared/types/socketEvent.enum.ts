@@ -6,6 +6,9 @@
 export enum SocketEventsEnum {
   BoardsJoin = 'boards:join',
   BoardsLeave = 'boards:leave',
+  BoardsUpdate = 'boards:update',
+  BoardsUpdateSuccess = 'boards:updateSuccess',
+  BoardsUpdateFailure = 'boards:updateFailure',
   ColumnCreate = 'column:create',
   ColumnCreateSuccess = 'column:createSuccess',
   ColumnCreateFailure = 'column:createFailure',

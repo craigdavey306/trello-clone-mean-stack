@@ -1,7 +1,8 @@
 import { Response, NextFunction } from 'express';
 import { Server } from 'socket.io';
 import BoardModel from '../models/Board';
-import { ExpressRequest, Socket } from '../types';
+import { ExpressRequest, Socket, SocketEventsEnum } from '../types';
+import { getErrorMessage } from '../helpers';
 
 /**
  * Schedules a command to retrieve all boards for the user.
@@ -107,4 +108,40 @@ export const leaveBoard = (
   data: { boardId: string }
 ): void => {
   socket.leave(data.boardId);
+};
+
+/**
+ * Logic to update a board and notify all subscribers about the edit.
+ * @param io
+ * @param socket
+ * @param data
+ */
+export const updateBoard = async (
+  io: Server,
+  socket: Socket,
+  data: { boardId: string; fields: { title: string } }
+): Promise<void> => {
+  try {
+    if (!socket.user) {
+      socket.emit(
+        SocketEventsEnum.BoardsUpdateFailure,
+        'User is not authorized'
+      );
+      return;
+    }
+
+    const updatedBoard = await BoardModel.findByIdAndUpdate(
+      data.boardId,
+      data.fields,
+      { new: true }
+    );
+
+    socket.emit(SocketEventsEnum.BoardsUpdateSuccess, updatedBoard);
+    io.to(data.boardId).emit(
+      SocketEventsEnum.BoardsUpdateSuccess,
+      updatedBoard
+    );
+  } catch (err) {
+    socket.emit(SocketEventsEnum.BoardsUpdateFailure, getErrorMessage(err));
+  }
 };
