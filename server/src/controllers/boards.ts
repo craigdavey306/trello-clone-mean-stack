@@ -136,7 +136,6 @@ export const updateBoard = async (
       { new: true }
     );
 
-    socket.emit(SocketEventsEnum.BoardsUpdateSuccess, updatedBoard);
     io.to(data.boardId).emit(
       SocketEventsEnum.BoardsUpdateSuccess,
       updatedBoard

@@ -11,7 +11,9 @@ import { SocketEventsEnum } from '../types/socketEvent.enum';
   providedIn: 'root',
 })
 export class ColumnsService {
-  constructor(private http: HttpClient, private socketService: SocketService) {}
+  constructor(private http: HttpClient, private socketService: SocketService) {
+    console.log('socket svc', socketService);
+  }
 
   getColumns(boardId: string): Observable<ColumnInterface[]> {
     const url = `${environment.apiUrl}/board/${boardId}/columns`;
@@ -20,5 +22,24 @@ export class ColumnsService {
 
   createColumn(columnInput: ColumnInputInterface): void {
     this.socketService.emit(SocketEventsEnum.ColumnCreate, columnInput);
+  }
+
+  updateColumn(
+    boardId: string,
+    columnId: string,
+    fields: { title: string }
+  ): void {
+    this.socketService.emit(SocketEventsEnum.ColumnUpdate, {
+      boardId,
+      columnId,
+      fields,
+    });
+  }
+
+  deleteColumn(boardId: string, columnId: string): void {
+    this.socketService.emit(SocketEventsEnum.ColumnDelete, {
+      boardId,
+      columnId,
+    });
   }
 }

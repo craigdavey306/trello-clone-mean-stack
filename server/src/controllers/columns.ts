@@ -66,3 +66,70 @@ export const createColumn = async (
     socket.emit(SocketEventsEnum.ColumnCreateFailure, errorMessage);
   }
 };
+
+/**
+ * Logic to delete a column and notify all subscribers about the edit.
+ * @param io
+ * @param socket
+ * @param data
+ */
+export const deleteColumn = async (
+  io: Server,
+  socket: Socket,
+  data: { boardId: string; columnId: string }
+): Promise<void> => {
+  try {
+    if (!socket.user) {
+      socket.emit(
+        SocketEventsEnum.ColumnDeleteFailure,
+        'User is not authorized'
+      );
+      return;
+    }
+
+    await ColumnModel.deleteOne({ _id: data.columnId });
+
+    socket.emit(SocketEventsEnum.ColumnDeleteSuccess);
+    io.to(data.boardId).emit(
+      SocketEventsEnum.ColumnDeleteSuccess,
+      data.columnId
+    );
+  } catch (err) {
+    socket.emit(SocketEventsEnum.ColumnDeleteFailure, getErrorMessage(err));
+  }
+};
+
+/**
+ * Logic to update a column and notify all subscribers about the edit.
+ * @param io
+ * @param socket
+ * @param data
+ */
+export const updateColumn = async (
+  io: Server,
+  socket: Socket,
+  data: { boardId: string; columnId: string; fields: { title: string } }
+): Promise<void> => {
+  try {
+    if (!socket.user) {
+      socket.emit(
+        SocketEventsEnum.ColumnUpdateFailure,
+        'User is not authorized'
+      );
+      return;
+    }
+
+    const updatedColumn = await ColumnModel.findByIdAndUpdate(
+      data.columnId,
+      data.fields,
+      { new: true }
+    );
+
+    io.to(data.boardId).emit(
+      SocketEventsEnum.ColumnUpdateSuccess,
+      updatedColumn
+    );
+  } catch (err) {
+    socket.emit(SocketEventsEnum.ColumnUpdateFailure, getErrorMessage(err));
+  }
+};

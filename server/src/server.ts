@@ -104,6 +104,16 @@ io.use(async (socket: Socket, next) => {
   socket.on(SocketEventsEnum.BoardsDelete, (data) => {
     boardsController.deleteBoard(io, socket, data);
   });
+
+  // listen for column delete event
+  socket.on(SocketEventsEnum.ColumnDelete, (data) => {
+    columnsController.deleteColumn(io, socket, data);
+  });
+
+  // listen for column update event
+  socket.on(SocketEventsEnum.ColumnUpdate, (data) => {
+    columnsController.updateColumn(io, socket, data);
+  });
 });
 
 mongoose.connect(`${databaseUri}/${databaseName}`).then(() => {

@@ -11,6 +11,7 @@ export class SocketService {
   socket: Socket | undefined;
 
   setupSocketConnection(currentUser: CurrentUser): void {
+    if (this.socket) return;
     this.socket = io(environment.socketUrl, {
       auth: {
         token: currentUser.token,
