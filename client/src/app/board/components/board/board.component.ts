@@ -79,7 +79,7 @@ export class BoardComponent implements OnInit, OnDestroy {
 
   initializeListeners(): void {
     this.router.events.subscribe((event) => {
-      if (event instanceof NavigationStart) {
+      if (event instanceof NavigationStart && !event.url.includes('/boards/')) {
         this.boardService.leaveBoard(this.boardId);
       }
     });
@@ -120,6 +120,11 @@ export class BoardComponent implements OnInit, OnDestroy {
         this.router.navigateByUrl('/boards');
       });
 
+    this.socketService
+      .listen<string>(SocketEventsEnum.TaskDeleteSuccess)
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((taskId) => this.boardService.deleteTask(taskId));
+
     // listener for column update success
     this.socketService
       .listen<ColumnInterface>(SocketEventsEnum.ColumnUpdateSuccess)
@@ -127,6 +132,12 @@ export class BoardComponent implements OnInit, OnDestroy {
       .subscribe((updatedColumn) =>
         this.boardService.updateColumn(updatedColumn)
       );
+
+    // listener for task update success
+    this.socketService
+      .listen<TaskInterface>(SocketEventsEnum.TaskUpdateSuccess)
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((updatedTask) => this.boardService.updateTask(updatedTask));
   }
 
   fetchData(): void {
@@ -184,5 +195,9 @@ export class BoardComponent implements OnInit, OnDestroy {
 
   deleteColumn(columnId: string): void {
     this.columnsService.deleteColumn(this.boardId, columnId);
+  }
+
+  openTask(taskId: string): void {
+    this.router.navigate(['boards', this.boardId, 'tasks', taskId]);
   }
 }

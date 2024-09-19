@@ -114,6 +114,16 @@ io.use(async (socket: Socket, next) => {
   socket.on(SocketEventsEnum.ColumnUpdate, (data) => {
     columnsController.updateColumn(io, socket, data);
   });
+
+  // listen for task update event
+  socket.on(SocketEventsEnum.TaskUpdate, (data) => {
+    tasksController.updateTask(io, socket, data);
+  });
+
+  // listen for task delete event
+  socket.on(SocketEventsEnum.TaskDelete, (data) => {
+    tasksController.deleteTask(io, socket, data);
+  });
 });
 
 mongoose.connect(`${databaseUri}/${databaseName}`).then(() => {

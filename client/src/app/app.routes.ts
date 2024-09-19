@@ -5,6 +5,7 @@ import { LoginComponent } from './auth/components/login/login.component';
 import { HomeComponent } from './home/components/home/home.component';
 import { BoardsComponent } from './boards/components/boards/boards.component';
 import { BoardComponent } from './board/components/board/board.component';
+import { TaskModalComponent } from './board/components/taskModal/taskModal.component';
 
 export const routes: Routes = [
   {
@@ -29,5 +30,11 @@ export const routes: Routes = [
     path: 'boards/:boardId',
     component: BoardComponent,
     canActivate: [() => authGuardCanActivate],
+    children: [
+      {
+        path: 'tasks/:taskId',
+        component: TaskModalComponent,
+      },
+    ],
   },
 ];

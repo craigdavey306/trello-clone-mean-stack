@@ -22,6 +22,8 @@ export class BoardService {
 
   leaveBoard(boardId: string): void {
     this.board$.next(null);
+    // this.columns$.next([]);
+    // this.tasks$.next([]);
     this.socketService.emit(SocketEventsEnum.BoardsLeave, { boardId });
   }
 
@@ -49,6 +51,31 @@ export class BoardService {
 
   addTask(task: TaskInterface): void {
     const updatedTasks = [...this.tasks$.getValue(), task];
+    this.tasks$.next(updatedTasks);
+  }
+
+  updateTask(updatedTask: TaskInterface): void {
+    const updatedTasks = this.tasks$.getValue().map((task) => {
+      if (task.id === updatedTask.id) {
+        return {
+          ...task,
+          title: updatedTask.title,
+          description: updatedTask.description,
+          columnId: updatedTask.columnId,
+        };
+      }
+
+      return task;
+    });
+
+    this.tasks$.next(updatedTasks);
+  }
+
+  deleteTask(taskId: string): void {
+    const updatedTasks = this.tasks$
+      .getValue()
+      .filter((task) => task.id !== taskId);
+
     this.tasks$.next(updatedTasks);
   }
 

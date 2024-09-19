@@ -31,6 +31,10 @@
       <div
         *ngFor="let task of getTasksByColumn(column.id, data.tasks)"
         class="task"
+        (keydown.enter)="openTask(task.id)"
+        (click)="openTask(task.id)"
+        tabindex="0"
+        aria-roledescription="button"
       >
         {{ task.title }}
       </div>
@@ -53,3 +57,5 @@
     ></inline-form>
   </div>
 </div>
+
+<router-outlet />

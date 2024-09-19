@@ -65,3 +65,62 @@ export const createTask = async (
     socket.emit(SocketEventsEnum.TaskCreateFailure, errorMessage);
   }
 };
+
+/**
+ * Logic to update a task and notify all subscribers about the edit.
+ * @param io
+ * @param socket
+ * @param data
+ */
+export const updateTask = async (
+  io: Server,
+  socket: Socket,
+  data: {
+    boardId: string;
+    taskId: string;
+    fields: { title?: string; description?: string; columnId?: string };
+  }
+): Promise<void> => {
+  try {
+    if (!socket.user) {
+      socket.emit(SocketEventsEnum.TaskUpdateFailure, 'User is not authorized');
+      return;
+    }
+
+    const updatedTask = await TaskModel.findByIdAndUpdate(
+      data.taskId,
+      data.fields,
+      { new: true }
+    );
+
+    io.to(data.boardId).emit(SocketEventsEnum.TaskUpdateSuccess, updatedTask);
+  } catch (err) {
+    socket.emit(SocketEventsEnum.TaskUpdateFailure, getErrorMessage(err));
+  }
+};
+
+/**
+ * Logic to delete a task and notify all subscribers about the edit.
+ * @param io
+ * @param socket
+ * @param data
+ */
+export const deleteTask = async (
+  io: Server,
+  socket: Socket,
+  data: { boardId: string; taskId: string }
+): Promise<void> => {
+  try {
+    if (!socket.user) {
+      socket.emit(SocketEventsEnum.TaskDeleteFailure, 'User is not authorized');
+      return;
+    }
+
+    await TaskModel.deleteOne({ _id: data.taskId });
+
+    socket.emit(SocketEventsEnum.ColumnDeleteSuccess);
+    io.to(data.boardId).emit(SocketEventsEnum.TaskDeleteSuccess, data.taskId);
+  } catch (err) {
+    socket.emit(SocketEventsEnum.TaskDeleteFailure, getErrorMessage(err));
+  }
+};
